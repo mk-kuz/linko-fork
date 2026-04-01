@@ -14,6 +14,17 @@ import (
 	"boot.dev/linko/internal/store"
 )
 
+func replaceAttr(groups []string, a slog.Attr) slog.Attr {
+	if a.Key == "error" {
+		err, ok := a.Value.Any().(error)
+		if !ok {
+			return a
+		}
+		return slog.String("error", fmt.Sprintf("%+v", err))
+	}
+	return a
+}
+
 type closeFunc func() error
 
 func main() {
@@ -31,7 +42,8 @@ func main() {
 
 func initializeLogger(logFile string) (*slog.Logger, closeFunc, error) {
 	debugHandler := slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{
-		Level: slog.LevelDebug,
+		Level:       slog.LevelDebug,
+		ReplaceAttr: replaceAttr,
 	})
 
 	var cleanup func() error = func() error { return nil }
@@ -43,7 +55,8 @@ func initializeLogger(logFile string) (*slog.Logger, closeFunc, error) {
 		}
 		bufferedFile := bufio.NewWriterSize(f, 8192)
 		infoHandler := slog.NewJSONHandler(bufferedFile, &slog.HandlerOptions{
-			Level: slog.LevelInfo,
+			Level:       slog.LevelInfo,
+			ReplaceAttr: replaceAttr,
 		})
 		cleanup = func() error {
 			bufferedFile.Flush()
