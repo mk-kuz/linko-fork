@@ -8,6 +8,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"strings"
 
 	"boot.dev/linko/internal/store"
 )
@@ -16,7 +17,7 @@ func requestLogger(logger *slog.Logger) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			next.ServeHTTP(w, r)
-			logger.Info(fmt.Sprintf("Served request: %s %s", r.Method, r.URL.Path))
+			logger.Info("Served request", "method", r.Method, "path", r.URL.Path, "client_ip", strings.Split(r.RemoteAddr, ":")[0])
 		})
 	}
 }
@@ -61,7 +62,7 @@ func (s *server) start() error {
 	}
 
 	addr := ln.Addr().(*net.TCPAddr).Port
-	s.logger.Debug(fmt.Sprintf("Linko is running on http://localhost:%d", addr))
+	s.logger.Debug("Linko is running", "port", addr)
 
 	if err := s.httpServer.Serve(ln); !errors.Is(err, http.ErrServerClosed) {
 		return err
