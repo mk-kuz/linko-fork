@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"context"
 	"flag"
 	"fmt"
@@ -37,8 +38,12 @@ func initializeLogger() (*log.Logger, func(), error) {
 		if err != nil {
 			return nil, nil, err
 		}
-		writer = io.MultiWriter(os.Stderr, f)
-		cleanup = func() { f.Close() }
+		bufferedFile := bufio.NewWriterSize(f, 8192)
+		writer = io.MultiWriter(os.Stderr, bufferedFile)
+		cleanup = func() {
+			bufferedFile.Flush()
+			f.Close()
+		}
 	}
 
 	return log.New(writer, "", log.LstdFlags), cleanup, nil
