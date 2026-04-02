@@ -72,14 +72,21 @@ func (s *Store) List(ctx context.Context) ([]ShortURL, error) {
 	ch := make(chan ShortURL)
 	go s.walk(ctx, ch)
 	var urls []ShortURL
+	var errs []error
 	for e := range ch {
 		if e.Err != nil {
-			return urls, e.Err
+			errs = append(errs, e.Err)
+			s.logger.Info("APPENDING ERR", "err", e.Err)
+			continue
 		}
-		urls = append(urls, e)
-		if len(urls) >= maxURLs {
-			break
+		if len(urls) < maxURLs {
+			s.logger.Info("APPENDING URL", "url", e)
+			urls = append(urls, e)
 		}
+	}
+	if len(errs) > 0 {
+		s.logger.Info("errs collected", "count", len(errs))
+		return urls, errors.Join(errs...)
 	}
 	return urls, nil
 }

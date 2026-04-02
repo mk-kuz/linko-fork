@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bufio"
 	"context"
 	"errors"
 	"flag"
@@ -22,23 +21,47 @@ type stackTracer interface {
 	StackTrace() pkgerr.StackTrace
 }
 
+type multiError interface {
+	error
+	Unwrap() []error
+}
+
 func replaceAttr(groups []string, a slog.Attr) slog.Attr {
 	if a.Key == "error" {
 		err, ok := a.Value.Any().(error)
 		if !ok {
 			return a
 		}
-		attrs := []slog.Attr{{Key: "message", Value: slog.StringValue(err.Error())}}
-		if stackErr, ok := errors.AsType[stackTracer](err); ok {
-			attrs = append(attrs, slog.Attr{
-				Key:   "stack_trace",
-				Value: slog.StringValue(fmt.Sprintf("%+v", stackErr.StackTrace())),
-			})
+
+		if me, ok := errors.AsType[multiError](err); ok {
+			subErrs := me.Unwrap()
+			var attrs []slog.Attr
+			for i, subErr := range subErrs {
+				subAttrs := errorAttrs(subErr)
+				attrs = append(attrs, slog.Attr{
+					Key:   fmt.Sprintf("error_%d", i+1),
+					Value: slog.GroupValue(subAttrs...),
+				})
+			}
+			return slog.GroupAttrs("errors", attrs...)
 		}
-		attrs = append(attrs, linkoerr.Attrs(err)...)
+
+		attrs := errorAttrs(err)
 		return slog.GroupAttrs("error", attrs...)
 	}
 	return a
+}
+
+func errorAttrs(err error) []slog.Attr {
+	attrs := []slog.Attr{{Key: "message", Value: slog.StringValue(err.Error())}}
+	attrs = append(attrs, linkoerr.Attrs(err)...)
+	if stackErr, ok := errors.AsType[stackTracer](err); ok {
+		attrs = append(attrs, slog.Attr{
+			Key:   "stack_trace",
+			Value: slog.StringValue(fmt.Sprintf("%+v", stackErr.StackTrace())),
+		})
+	}
+	return attrs
 }
 
 type closeFunc func() error
@@ -69,13 +92,12 @@ func initializeLogger(logFile string) (*slog.Logger, closeFunc, error) {
 		if err != nil {
 			return nil, nil, err
 		}
-		bufferedFile := bufio.NewWriterSize(f, 8192)
-		infoHandler := slog.NewJSONHandler(bufferedFile, &slog.HandlerOptions{
+		//bufferedFile := bufio.NewWriterSize(f, 8192)
+		infoHandler := slog.NewJSONHandler(f, &slog.HandlerOptions{
 			Level:       slog.LevelInfo,
 			ReplaceAttr: replaceAttr,
 		})
 		cleanup = func() error {
-			bufferedFile.Flush()
 			return f.Close()
 		}
 		return slog.New(slog.NewMultiHandler(debugHandler, infoHandler)), cleanup, nil
