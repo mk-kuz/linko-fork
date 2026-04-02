@@ -12,6 +12,7 @@ import (
 	"syscall"
 	"time"
 
+	"boot.dev/linko/internal/linkoerr"
 	"boot.dev/linko/internal/store"
 	pkgerr "github.com/pkg/errors"
 )
@@ -21,57 +22,21 @@ type stackTracer interface {
 	StackTrace() pkgerr.StackTrace
 }
 
-type errWithAttrs struct {
-	error
-	attrs []slog.Attr
-}
-
-func WithAttrs(err error, args ...any) error {
-	return &errWithAttrs{
-		error: err,
-		attrs: argsToAttr(args),
-	}
-}
-
-func argsToAttr(args []any) []slog.Attr {
-	attrs := make([]slog.Attr, 0, len(args))
-	for i := 0; i < len(args); {
-		switch key := args[i].(type) {
-		case slog.Attr:
-			attrs = append(attrs, key)
-			i++
-		case string:
-			if i+1 >= len(args) {
-				attrs = append(attrs, slog.String("!BADKEY", key))
-				i++
-			} else {
-				attrs = append(attrs, slog.Any(key, args[i+1]))
-				i += 2
-			}
-		default:
-			attrs = append(attrs, slog.Any("!BADKEY", args[i]))
-			i++
-		}
-	}
-	return attrs
-}
-
 func replaceAttr(groups []string, a slog.Attr) slog.Attr {
 	if a.Key == "error" {
 		err, ok := a.Value.Any().(error)
 		if !ok {
 			return a
 		}
+		attrs := []slog.Attr{{Key: "message", Value: slog.StringValue(err.Error())}}
 		if stackErr, ok := errors.AsType[stackTracer](err); ok {
-			return slog.GroupAttrs("error", slog.Attr{
-				Key:   "message",
-				Value: slog.StringValue(stackErr.Error()),
-			}, slog.Attr{
+			attrs = append(attrs, slog.Attr{
 				Key:   "stack_trace",
 				Value: slog.StringValue(fmt.Sprintf("%+v", stackErr.StackTrace())),
 			})
 		}
-		return slog.String("error", fmt.Sprintf("%+v", err))
+		attrs = append(attrs, linkoerr.Attrs(err)...)
+		return slog.GroupAttrs("error", attrs...)
 	}
 	return a
 }
