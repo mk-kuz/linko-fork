@@ -38,6 +38,7 @@ func requestID(next http.Handler) http.Handler {
 			rand.Read(b)
 			requestID = hex.EncodeToString(b)
 		}
+		r = r.WithContext(context.WithValue(r.Context(), "request_id", requestID))
 		w.Header().Set("X-Request-ID", requestID)
 		next.ServeHTTP(w, r)
 	})
