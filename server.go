@@ -40,8 +40,11 @@ func redactIP(addr string) string {
 		return addr
 	}
 	ip := net.ParseIP(host)
+	if ip == nil {
+		return addr
+	}
 	octets := ip.To4()
-	if ip == nil || octets == nil {
+	if octets == nil {
 		return addr
 	}
 	return fmt.Sprintf("%d.%d.%d.x", octets[0], octets[1], octets[2])
