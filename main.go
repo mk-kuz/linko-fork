@@ -17,6 +17,7 @@ import (
 	"github.com/lmittmann/tint"
 	"github.com/mattn/go-isatty"
 	pkgerr "github.com/pkg/errors"
+	"gopkg.in/natefinch/lumberjack.v2"
 )
 
 type stackTracer interface {
@@ -92,17 +93,20 @@ func initializeLogger(logFile string) (*slog.Logger, closeFunc, error) {
 	var cleanup func() error = func() error { return nil }
 
 	if logFile != "" {
-		f, err := os.OpenFile(logFile, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
-		if err != nil {
-			return nil, nil, err
+		fileLogger := &lumberjack.Logger{
+			Filename:   logFile,
+			MaxSize:    1,
+			MaxAge:     28,
+			MaxBackups: 10,
+			LocalTime:  false,
+			Compress:   true,
 		}
-		//bufferedFile := bufio.NewWriterSize(f, 8192)
-		infoHandler := slog.NewJSONHandler(f, &slog.HandlerOptions{
+		infoHandler := slog.NewJSONHandler(fileLogger, &slog.HandlerOptions{
 			Level:       slog.LevelInfo,
 			ReplaceAttr: replaceAttr,
 		})
 		cleanup = func() error {
-			return f.Close()
+			return fileLogger.Close()
 		}
 		return slog.New(slog.NewMultiHandler(debugHandler, infoHandler)), cleanup, nil
 	}
