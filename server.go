@@ -88,7 +88,7 @@ func requestLogger(logger *slog.Logger) func(http.Handler) http.Handler {
 
 			attrs := make([]slog.Attr, 0, 9)
 			attrs = append(attrs,
-				slog.String("request_id", r.Header.Get("X-Request-ID")),
+				slog.String("request_id", spyWriter.Header().Get("X-Request-ID")),
 				slog.String("method", r.Method),
 				slog.String("path", r.URL.Path),
 				slog.String("client_ip", r.RemoteAddr),
