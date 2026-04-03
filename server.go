@@ -34,6 +34,19 @@ func httpError(ctx context.Context, w http.ResponseWriter, status int, err error
 	http.Error(w, msg, status)
 }
 
+func redactIP(addr string) string {
+	host, _, err := net.SplitHostPort(addr)
+	if err != nil {
+		return addr
+	}
+	ip := net.ParseIP(host)
+	octets := ip.To4()
+	if ip == nil || octets == nil {
+		return addr
+	}
+	return fmt.Sprintf("%d.%d.%d.x", octets[0], octets[1], octets[2])
+}
+
 func requestID(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		requestID := r.Header.Get("X-Request-ID")
@@ -96,7 +109,7 @@ func requestLogger(logger *slog.Logger) func(http.Handler) http.Handler {
 				slog.String("request_id", spyWriter.Header().Get("X-Request-ID")),
 				slog.String("method", r.Method),
 				slog.String("path", r.URL.Path),
-				slog.String("client_ip", r.RemoteAddr),
+				slog.String("client_ip", redactIP(r.RemoteAddr)),
 				slog.Duration("duration", time.Since(start)),
 				slog.Int("request_body_bytes", spyReader.bytesRead),
 				slog.Int("response_status", spyWriter.statusCode),
