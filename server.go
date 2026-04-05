@@ -17,6 +17,7 @@ import (
 	"boot.dev/linko/internal/metrics"
 	"boot.dev/linko/internal/store"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
 
 const logContextKey contextKey = "log_context"
@@ -146,7 +147,7 @@ func newServer(store store.Store, port int, cancel context.CancelFunc, logger *s
 
 	srv := &http.Server{
 		Addr:    fmt.Sprintf(":%d", port),
-		Handler: metrics.MetricsMiddleware(requestLogger(logger)(requestID(mux))),
+		Handler: otelhttp.NewHandler(metrics.MetricsMiddleware(requestLogger(logger)(requestID(mux))), "http.server"),
 	}
 
 	s := &server{
