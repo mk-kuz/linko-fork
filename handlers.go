@@ -41,7 +41,7 @@ func (s *server) handlerLogin(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *server) handlerShortenLink(w http.ResponseWriter, r *http.Request) {
-	_, span := tracer.Start(r.Context(), "handler.shorten_link")
+	ctx, span := tracer.Start(r.Context(), "handler.shorten_link")
 	defer span.End()
 
 	user, ok := r.Context().Value(UserContextKey).(string)
@@ -61,11 +61,11 @@ func (s *server) handlerShortenLink(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := checkDestination(r.Context(), longURL); err != nil {
+	if err := checkDestination(ctx, longURL); err != nil {
 		httpError(r.Context(), w, http.StatusBadRequest, fmt.Errorf("invalid target URL: %v", err))
 		return
 	}
-	shortCode, err := s.store.Create(r.Context(), longURL)
+	shortCode, err := s.store.Create(ctx, longURL)
 	if err != nil {
 		httpError(r.Context(), w, http.StatusInternalServerError, fmt.Errorf("failed to shorten URL: %w", err))
 		return
@@ -77,10 +77,10 @@ func (s *server) handlerShortenLink(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *server) handlerRedirect(w http.ResponseWriter, r *http.Request) {
-	_, span := tracer.Start(r.Context(), "handler.redirect")
+	ctx, span := tracer.Start(r.Context(), "handler.redirect")
 	defer span.End()
 
-	longURL, err := s.store.Lookup(r.Context(), r.PathValue("shortCode"))
+	longURL, err := s.store.Lookup(ctx, r.PathValue("shortCode"))
 	if err != nil {
 		if errors.Is(err, store.ErrNotFound) {
 			httpError(r.Context(), w, http.StatusNotFound, errors.New("not found"))
@@ -91,7 +91,7 @@ func (s *server) handlerRedirect(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	_, _ = bcrypt.GenerateFromPassword([]byte(longURL), bcrypt.DefaultCost)
-	if err := checkDestination(r.Context(), longURL); err != nil {
+	if err := checkDestination(ctx, longURL); err != nil {
 		httpError(r.Context(), w, http.StatusBadGateway, err)
 		return
 	}
@@ -104,10 +104,10 @@ func (s *server) handlerRedirect(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *server) handlerListURLs(w http.ResponseWriter, r *http.Request) {
-	_, span := tracer.Start(r.Context(), "handler.list_urls")
+	ctx, span := tracer.Start(r.Context(), "handler.list_urls")
 	defer span.End()
 
-	codes, err := s.store.List(r.Context())
+	codes, err := s.store.List(ctx)
 	if err != nil {
 		s.logger.Error("failed to list URLs", "error", err)
 		httpError(r.Context(), w, http.StatusInternalServerError, fmt.Errorf("failed to list URLs: %w", err))
