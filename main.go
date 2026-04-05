@@ -23,6 +23,7 @@ import (
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
+	"go.opentelemetry.io/otel/trace"
 	"gopkg.in/natefinch/lumberjack.v2"
 )
 
@@ -86,6 +87,8 @@ func errorAttrs(err error) []slog.Attr {
 
 type closeFunc func() error
 
+var tracer trace.Tracer
+
 func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 
@@ -144,6 +147,7 @@ func initTracing(ctx context.Context) (func(context.Context) error, error) {
 	)
 
 	otel.SetTracerProvider(tp)
+	tracer = tp.Tracer("boot.dev/linko")
 	return tp.Shutdown, nil
 }
 
