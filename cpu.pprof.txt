@@ -1,0 +1,79 @@
+File: linko
+Build ID: 731c2d4d232c63a558f7fd79e854b61dfc974033
+Type: cpu
+Time: 2026-04-05 17:57:57 MSK
+Duration: 30.01s, Total samples = 6.28s (20.93%)
+Showing nodes accounting for 6.09s, 96.97% of 6.28s total
+Dropped 147 nodes (cum <= 0.03s)
+      flat  flat%   sum%        cum   cum%
+     4.43s 70.54% 70.54%      4.81s 76.59%  golang.org/x/crypto/blowfish.encryptBlock
+     0.60s  9.55% 80.10%      0.60s  9.55%  runtime.futex
+     0.54s  8.60% 88.69%      0.54s  8.60%  internal/runtime/syscall/linux.Syscall6
+     0.40s  6.37% 95.06%      0.40s  6.37%  runtime.asyncPreempt
+     0.11s  1.75% 96.82%      4.93s 78.50%  golang.org/x/crypto/blowfish.ExpandKey
+     0.01s  0.16% 96.97%      4.94s 78.66%  golang.org/x/crypto/bcrypt.expensiveBlowfishSetup
+         0     0% 96.97%      0.46s  7.32%  bufio.(*Writer).Flush
+         0     0% 96.97%      4.94s 78.66%  golang.org/x/crypto/bcrypt.GenerateFromPassword
+         0     0% 96.97%      4.94s 78.66%  golang.org/x/crypto/bcrypt.bcrypt
+         0     0% 96.97%      4.94s 78.66%  golang.org/x/crypto/bcrypt.newFromPassword
+         0     0% 96.97%      0.19s  3.03%  internal/poll.(*FD).Accept
+         0     0% 96.97%      0.46s  7.32%  internal/poll.(*FD).Write
+         0     0% 96.97%      0.19s  3.03%  internal/poll.accept
+         0     0% 96.97%      0.47s  7.48%  internal/poll.ignoringEINTRIO (inline)
+         0     0% 96.97%      5.25s 83.60%  main.(*server).handlerRedirect
+         0     0% 96.97%      0.26s  4.14%  main.(*server).start
+         0     0% 96.97%      0.29s  4.62%  main.checkDestination
+         0     0% 96.97%      5.30s 84.39%  main.newServer.MetricsMiddleware.func4
+         0     0% 96.97%      5.30s 84.39%  main.newServer.newServer.requestLogger.func1.func3
+         0     0% 96.97%      5.29s 84.24%  main.newServer.requestID.func2
+         0     0% 96.97%      0.26s  4.14%  main.run.func2
+         0     0% 96.97%      0.19s  3.03%  net.(*TCPListener).Accept
+         0     0% 96.97%      0.19s  3.03%  net.(*TCPListener).accept
+         0     0% 96.97%      0.45s  7.17%  net.(*conn).Write
+         0     0% 96.97%      0.45s  7.17%  net.(*netFD).Write
+         0     0% 96.97%      0.19s  3.03%  net.(*netFD).accept
+         0     0% 96.97%      0.28s  4.46%  net/http.(*Client).Do (inline)
+         0     0% 96.97%      0.28s  4.46%  net/http.(*Client).Get
+         0     0% 96.97%      0.28s  4.46%  net/http.(*Client).do
+         0     0% 96.97%      0.28s  4.46%  net/http.(*Client).send
+         0     0% 96.97%      5.28s 84.08%  net/http.(*ServeMux).ServeHTTP
+         0     0% 96.97%      0.26s  4.14%  net/http.(*Server).Serve
+         0     0% 96.97%      0.28s  4.46%  net/http.(*Transport).RoundTrip
+         0     0% 96.97%      0.28s  4.46%  net/http.(*Transport).roundTrip
+         0     0% 96.97%      5.61s 89.33%  net/http.(*conn).serve
+         0     0% 96.97%      0.04s  0.64%  net/http.(*persistConn).readLoop
+         0     0% 96.97%      0.28s  4.46%  net/http.(*persistConn).roundTrip
+         0     0% 96.97%      0.25s  3.98%  net/http.(*persistConn).writeLoop
+         0     0% 96.97%      0.23s  3.66%  net/http.(*response).finishRequest
+         0     0% 96.97%      5.30s 84.39%  net/http.HandlerFunc.ServeHTTP
+         0     0% 96.97%      0.21s  3.34%  net/http.checkConnErrorWriter.Write
+         0     0% 96.97%      0.24s  3.82%  net/http.persistConnWriter.Write
+         0     0% 96.97%      0.28s  4.46%  net/http.send
+         0     0% 96.97%      5.30s 84.39%  net/http.serverHandler.ServeHTTP
+         0     0% 96.97%      0.27s  4.30%  runtime.chansend
+         0     0% 96.97%      0.27s  4.30%  runtime.chansend1
+         0     0% 96.97%      0.18s  2.87%  runtime.entersyscall
+         0     0% 96.97%      0.18s  2.87%  runtime.entersyscallWakeSysmon
+         0     0% 96.97%      0.05s   0.8%  runtime.findRunnable
+         0     0% 96.97%      0.59s  9.39%  runtime.futexwakeup
+         0     0% 96.97%      0.29s  4.62%  runtime.goready (inline)
+         0     0% 96.97%      0.08s  1.27%  runtime.mcall
+         0     0% 96.97%      0.10s  1.59%  runtime.newproc
+         0     0% 96.97%      0.10s  1.59%  runtime.newproc.func1
+         0     0% 96.97%      0.59s  9.39%  runtime.notewakeup
+         0     0% 96.97%      0.05s   0.8%  runtime.park_m
+         0     0% 96.97%      0.29s  4.62%  runtime.ready
+         0     0% 96.97%      0.18s  2.87%  runtime.reentersyscall
+         0     0% 96.97%      0.06s  0.96%  runtime.schedule
+         0     0% 96.97%      0.27s  4.30%  runtime.send
+         0     0% 96.97%      0.27s  4.30%  runtime.send.goready.func1
+         0     0% 96.97%      0.41s  6.53%  runtime.startm
+         0     0% 96.97%      0.57s  9.08%  runtime.systemstack
+         0     0% 96.97%      0.41s  6.53%  runtime.wakep
+         0     0% 96.97%      0.19s  3.03%  syscall.Accept4
+         0     0% 96.97%      0.51s  8.12%  syscall.RawSyscall6
+         0     0% 96.97%      0.50s  7.96%  syscall.Syscall
+         0     0% 96.97%      0.19s  3.03%  syscall.Syscall6
+         0     0% 96.97%      0.46s  7.32%  syscall.Write (inline)
+         0     0% 96.97%      0.19s  3.03%  syscall.accept4
+         0     0% 96.97%      0.46s  7.32%  syscall.write
