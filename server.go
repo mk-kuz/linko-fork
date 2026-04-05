@@ -13,6 +13,7 @@ import (
 	"os"
 	"time"
 
+	"boot.dev/linko/internal/metrics"
 	"boot.dev/linko/internal/store"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
@@ -144,7 +145,7 @@ func newServer(store store.Store, port int, cancel context.CancelFunc, logger *s
 
 	srv := &http.Server{
 		Addr:    fmt.Sprintf(":%d", port),
-		Handler: requestLogger(logger)(requestID(mux)),
+		Handler: metrics.MetricsMiddleware(requestLogger(logger)(requestID(mux))),
 	}
 
 	s := &server{
